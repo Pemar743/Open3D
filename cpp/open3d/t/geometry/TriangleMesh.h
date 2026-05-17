@@ -731,10 +731,10 @@ public:
     /// attribute "areas". Prints a warning, if mesh is empty or has no
     /// triangles.
     TriangleMesh &ComputeTriangleAreas();
-    
+
     /// \brief Function to compute vertex areas and save it as a vertex
     /// attribute "areas". Each vertex area is defined as one-third of the sum
-    /// of the area of all adjacent triangles. Prints a warning, 
+    /// of the area of all adjacent triangles. Prints a warning,
     /// if mesh is empty or has no vertices.
     TriangleMesh &ComputeVertexAreas();
 

@@ -1141,8 +1141,9 @@ Example:
         surface_area = box.compute_triangle_areas().triangle.areas.sum()
 )");
 
-    triangle_mesh.def("compute_vertex_areas", &TriangleMesh::ComputeVertexAreas,
-                      R"(Compute vertex areas and save it as \"areas\" vertex attribute.
+    triangle_mesh.def(
+            "compute_vertex_areas", &TriangleMesh::ComputeVertexAreas,
+            R"(Compute vertex areas and save it as \"areas\" vertex attribute.
 
 Returns:
     The mesh.

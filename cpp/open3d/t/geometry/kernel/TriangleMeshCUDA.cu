@@ -51,8 +51,8 @@ void ComputeVertexNormalsCUDA(const core::Tensor& triangles,
 }
 
 void ComputeVertexAreasCUDA(const core::Tensor& vertices,
-                           const core::Tensor& triangles,
-                           core::Tensor& vertex_areas) {
+                            const core::Tensor& triangles,
+                            core::Tensor& vertex_areas) {
     const int64_t n = triangles.GetLength();
     const core::Dtype dtype = vertex_areas.GetDtype();
     const core::Tensor triangles_d = triangles.To(core::Int64);
@@ -64,7 +64,8 @@ void ComputeVertexAreasCUDA(const core::Tensor& vertices,
         const int64_t* triangle_ptr = triangles_d.GetDataPtr<int64_t>();
         const scalar_t* vertex_ptr = vertices.GetDataPtr<scalar_t>();
 
-        core::ParallelFor(vertex_areas.GetDevice(), n,
+        core::ParallelFor(
+                vertex_areas.GetDevice(), n,
                 [=] OPEN3D_DEVICE(int64_t workload_idx) {
                     int64_t idx = 3 * workload_idx;
 
@@ -82,8 +83,9 @@ void ComputeVertexAreasCUDA(const core::Tensor& vertices,
                     v02[1] = vertex_ptr[3 * i2 + 1] - vertex_ptr[3 * i0 + 1];
                     v02[2] = vertex_ptr[3 * i2 + 2] - vertex_ptr[3 * i0 + 2];
 
-                    scalar_t tri_area = scalar_t(0.5) *
-                                        core::linalg::kernel::cross_mag_3x1(v01, v02);
+                    scalar_t tri_area =
+                            scalar_t(0.5) *
+                            core::linalg::kernel::cross_mag_3x1(v01, v02);
 
                     scalar_t share = tri_area / scalar_t(3.0);
 

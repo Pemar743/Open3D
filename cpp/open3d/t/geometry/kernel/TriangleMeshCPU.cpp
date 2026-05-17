@@ -56,8 +56,8 @@ void ComputeVertexNormalsCPU(const core::Tensor& triangles,
 }
 
 void ComputeVertexAreasCPU(const core::Tensor& vertices,
-                          const core::Tensor& triangles,
-                          core::Tensor& vertex_areas) {
+                           const core::Tensor& triangles,
+                           core::Tensor& vertex_areas) {
     const int64_t n = triangles.GetLength();
     const core::Dtype dtype = vertex_areas.GetDtype();
     const core::Tensor triangles_d = triangles.To(core::Int64);

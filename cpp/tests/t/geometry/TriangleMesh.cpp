@@ -1488,11 +1488,11 @@ TEST_P(TriangleMeshPermuteDevices, ComputeVertexAreas) {
             t::geometry::TriangleMesh::CreateSphere(1.0, 3).To(device);
     core::Tensor ref_areas = core::Tensor::Init<float>(
             {0.7806247379444788, 0.7806247379444788, 0.6932209462900113,
-             0.6932209438081801, 0.693220941865227,  0.6932209462900114,
-             0.6932209438081802, 0.693220941865227,  0.6932209462900113,
+             0.6932209438081801, 0.693220941865227, 0.6932209462900114,
+             0.6932209438081802, 0.693220941865227, 0.6932209462900113,
              0.6932209418652271, 0.6932209438081801, 0.6932209462900114,
              0.6932209418652271, 0.6932209438081801},
-             device);
+            device);
 
     t_mesh.ComputeVertexAreas();
     EXPECT_TRUE(t_mesh.GetVertexAttr("areas").AllClose(ref_areas));
