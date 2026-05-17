@@ -29,6 +29,10 @@ void ComputeTriangleAreasCPU(const core::Tensor& vertices,
                              const core::Tensor& triangles,
                              core::Tensor& triangle_areas);
 
+void ComputeVertexAreasCPU(const core::Tensor& vertices,
+                          const core::Tensor& triangles,
+                          core::Tensor& vertex_areas);
+
 std::array<core::Tensor, 3> SamplePointsUniformlyCPU(
         const core::Tensor& triangles,
         const core::Tensor& vertices,
@@ -54,6 +58,10 @@ void ComputeVertexNormalsCUDA(const core::Tensor& triangles,
 void ComputeTriangleAreasCUDA(const core::Tensor& vertices,
                               const core::Tensor& triangles,
                               core::Tensor& triangle_areas);
+
+void ComputeVertexAreasCUDA(const core::Tensor& vertices,
+                           const core::Tensor& triangles,
+                           core::Tensor& vertex_areas);
 #endif
 
 }  // namespace trianglemesh
