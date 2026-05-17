@@ -1141,6 +1141,21 @@ Example:
         surface_area = box.compute_triangle_areas().triangle.areas.sum()
 )");
 
+    triangle_mesh.def("compute_vertex_areas", &TriangleMesh::ComputeVertexAreas,
+                      R"(Compute vertex areas and save it as \"areas\" vertex attribute.
+
+Returns:
+    The mesh.
+
+Example:
+
+    This code computes the overall surface area of a box::
+
+        import open3d as o3d
+        box = o3d.t.geometry.TriangleMesh.create_box()
+        surface_area = box.compute_vertex_areas().vertex.areas.sum()
+)");
+
     triangle_mesh.def("remove_non_manifold_edges",
                       &TriangleMesh::RemoveNonManifoldEdges,
                       R"(Function that removes all non-manifold edges, by
