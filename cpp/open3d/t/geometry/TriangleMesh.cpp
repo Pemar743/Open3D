@@ -304,6 +304,54 @@ TriangleMesh &TriangleMesh::ComputeVertexNormals(bool normalized) {
     return *this;
 }
 
+static core::Tensor ComputeVertexAreasHelper(const TriangleMesh &mesh) {
+    const int64_t vertex_num = mesh.GetVertexPositions().GetLength();
+    const core::Dtype dtype = mesh.GetVertexPositions().GetDtype();
+
+    core::Tensor vertex_areas({vertex_num}, dtype, mesh.GetDevice());
+
+    if (mesh.IsCPU()) {
+        kernel::trianglemesh::ComputeVertexAreasCPU(
+                mesh.GetVertexPositions().Contiguous(),
+                mesh.GetTriangleIndices().Contiguous(), vertex_areas);
+    } else if (mesh.IsCUDA()) {
+        CUDA_CALL(kernel::trianglemesh::ComputeVertexAreasCUDA,
+                  mesh.GetVertexPositions().Contiguous(),
+                  mesh.GetTriangleIndices().Contiguous(), vertex_areas);
+    } else {
+        utility::LogError("Unimplemented device");
+    }
+
+    return vertex_areas;
+}
+
+TriangleMesh &TriangleMesh::ComputeVertexAreas() {
+    if (IsEmpty()) {
+        utility::LogWarning("TriangleMesh is empty.");
+        return *this;
+    }
+
+    if (!HasTriangleIndices()) {
+        SetVertexAttr("areas",
+                      core::Tensor::Empty({0}, GetVertexPositions().GetDtype(),
+                                          GetDevice()));
+        utility::LogWarning("TriangleMesh has no triangle indices.");
+        return *this;
+    }
+
+    if (HasVertexAttr("areas")) {
+        utility::LogWarning(
+                "TriangleMesh already has vertex areas: remove "
+                "'areas' vertex attribute if you'd like to update.");
+        return *this;
+    }
+
+    core::Tensor vertex_areas = ComputeVertexAreasHelper(*this);
+    SetVertexAttr("areas", vertex_areas);
+
+    return *this;
+}
+
 static core::Tensor ComputeTriangleAreasHelper(const TriangleMesh &mesh) {
     const int64_t triangle_num = mesh.GetTriangleIndices().GetLength();
     const core::Dtype dtype = mesh.GetVertexPositions().GetDtype();
