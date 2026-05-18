@@ -65,35 +65,41 @@ void ComputeVertexAreasCPU(const core::Tensor& vertices,
     vertex_areas.Fill(0);
 
     DISPATCH_FLOAT_DTYPE_TO_TEMPLATE(dtype, [&]() {
-        scalar_t* area_ptr = vertex_areas.GetDataPtr<scalar_t>();
+        scalar_t* vertex_areas_ptr = vertex_areas.GetDataPtr<scalar_t>();
         const int64_t* triangle_ptr = triangles_d.GetDataPtr<int64_t>();
         const scalar_t* vertex_ptr = vertices.GetDataPtr<scalar_t>();
 
-        for (int64_t workload_idx = 0; workload_idx < n; ++workload_idx) {
-            int64_t idx = 3 * workload_idx;
+        for (int64_t i = 0; i < n; ++i) {
+            int64_t idx = 3 * i;
 
-            int64_t i0 = triangle_ptr[idx];
-            int64_t i1 = triangle_ptr[idx + 1];
-            int64_t i2 = triangle_ptr[idx + 2];
+            int64_t triangle_id1 = triangle_ptr[idx];
+            int64_t triangle_id2 = triangle_ptr[idx + 1];
+            int64_t triangle_id3 = triangle_ptr[idx + 2];
 
             scalar_t v01[3], v02[3];
 
-            v01[0] = vertex_ptr[3 * i1] - vertex_ptr[3 * i0];
-            v01[1] = vertex_ptr[3 * i1 + 1] - vertex_ptr[3 * i0 + 1];
-            v01[2] = vertex_ptr[3 * i1 + 2] - vertex_ptr[3 * i0 + 2];
+            v01[0] = vertex_ptr[3 * triangle_id2] -
+                     vertex_ptr[3 * triangle_id1];
+            v01[1] = vertex_ptr[3 * triangle_id2 + 1] -
+                     vertex_ptr[3 * triangle_id1 + 1];
+            v01[2] = vertex_ptr[3 * triangle_id2 + 2] -
+                     vertex_ptr[3 * triangle_id1 + 2];
+            
+            v02[0] = vertex_ptr[3 * triangle_id3] -
+                     vertex_ptr[3 * triangle_id1];
+            v02[1] = vertex_ptr[3 * triangle_id3 + 1] -
+                     vertex_ptr[3 * triangle_id1 + 1];
+            v02[2] = vertex_ptr[3 * triangle_id3 + 2] -
+                     vertex_ptr[3 * triangle_id1 + 2];
 
-            v02[0] = vertex_ptr[3 * i2] - vertex_ptr[3 * i0];
-            v02[1] = vertex_ptr[3 * i2 + 1] - vertex_ptr[3 * i0 + 1];
-            v02[2] = vertex_ptr[3 * i2 + 2] - vertex_ptr[3 * i0 + 2];
+            scalar_t tri_area = 
+                   0.5 * core::linalg::kernel::cross_mag_3x1(v01, v02);
 
-            scalar_t tri_area = scalar_t(0.5) *
-                                core::linalg::kernel::cross_mag_3x1(v01, v02);
+            scalar_t share = tri_area / 3.0;
 
-            scalar_t share = tri_area / scalar_t(3.0);
-
-            area_ptr[i0] += share;
-            area_ptr[i1] += share;
-            area_ptr[i2] += share;
+            vertex_areas_ptr[triangle_id1] += share;
+            vertex_areas_ptr[triangle_id2] += share;
+            vertex_areas_ptr[triangle_id3] += share;
         }
     });
 }
