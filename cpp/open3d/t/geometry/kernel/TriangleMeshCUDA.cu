@@ -64,40 +64,39 @@ void ComputeVertexAreasCUDA(const core::Tensor& vertices,
         const int64_t* triangle_ptr = triangles_d.GetDataPtr<int64_t>();
         const scalar_t* vertex_ptr = vertices.GetDataPtr<scalar_t>();
 
-        core::ParallelFor(
-                vertex_areas.GetDevice(), n,
-                [=] OPEN3D_DEVICE(int64_t workload_idx) {
-                    int64_t idx = 3 * workload_idx;
+        core::ParallelFor(vertex_areas.GetDevice(), n,
+                          [=] OPEN3D_DEVICE(int64_t workload_idx) {
+                              int64_t idx = 3 * workload_idx;
 
-                    int64_t triangle_id1 = triangle_ptr[idx];
-                    int64_t triangle_id2 = triangle_ptr[idx + 1];
-                    int64_t triangle_id3 = triangle_ptr[idx + 2];
+                              int64_t triangle_id1 = triangle_ptr[idx];
+                              int64_t triangle_id2 = triangle_ptr[idx + 1];
+                              int64_t triangle_id3 = triangle_ptr[idx + 2];
 
-                    scalar_t v01[3], v02[3];
-                    v01[0] = vertex_ptr[3 * triangle_id2] -
-                             vertex_ptr[3 * triangle_id1];
-                    v01[1] = vertex_ptr[3 * triangle_id2 + 1] -
-                             vertex_ptr[3 * triangle_id1 + 1];
-                    v01[2] = vertex_ptr[3 * triangle_id2 + 2] -
-                             vertex_ptr[3 * triangle_id1 + 2];
-                    
-                    v02[0] = vertex_ptr[3 * triangle_id3] -
-                             vertex_ptr[3 * triangle_id1];
-                    v02[1] = vertex_ptr[3 * triangle_id3 + 1] -
-                             vertex_ptr[3 * triangle_id1 + 1];
-                    v02[2] = vertex_ptr[3 * triangle_id3 + 2] -
-                             vertex_ptr[3 * triangle_id1 + 2];
+                              scalar_t v01[3], v02[3];
+                              v01[0] = vertex_ptr[3 * triangle_id2] -
+                                       vertex_ptr[3 * triangle_id1];
+                              v01[1] = vertex_ptr[3 * triangle_id2 + 1] -
+                                       vertex_ptr[3 * triangle_id1 + 1];
+                              v01[2] = vertex_ptr[3 * triangle_id2 + 2] -
+                                       vertex_ptr[3 * triangle_id1 + 2];
 
-                    scalar_t tri_area = 
-                           0.5 * core::linalg::kernel::cross_mag_3x1(
-                                         v01, v02);
+                              v02[0] = vertex_ptr[3 * triangle_id3] -
+                                       vertex_ptr[3 * triangle_id1];
+                              v02[1] = vertex_ptr[3 * triangle_id3 + 1] -
+                                       vertex_ptr[3 * triangle_id1 + 1];
+                              v02[2] = vertex_ptr[3 * triangle_id3 + 2] -
+                                       vertex_ptr[3 * triangle_id1 + 2];
 
-                    scalar_t share = tri_area / 3.0;
+                              scalar_t tri_area =
+                                      0.5 * core::linalg::kernel::cross_mag_3x1(
+                                                    v01, v02);
 
-                    atomicAdd(&vertex_areas_ptr[triangle_id1], share);
-                    atomicAdd(&vertex_areas_ptr[triangle_id2], share);
-                    atomicAdd(&vertex_areas_ptr[triangle_id3], share);
-                });
+                              scalar_t share = tri_area / 3.0;
+
+                              atomicAdd(&vertex_areas_ptr[triangle_id1], share);
+                              atomicAdd(&vertex_areas_ptr[triangle_id2], share);
+                              atomicAdd(&vertex_areas_ptr[triangle_id3], share);
+                          });
     });
 }
 
