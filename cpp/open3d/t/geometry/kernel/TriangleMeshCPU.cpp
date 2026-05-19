@@ -55,6 +55,55 @@ void ComputeVertexNormalsCPU(const core::Tensor& triangles,
     });
 }
 
+void ComputeVertexAreasCPU(const core::Tensor& vertices,
+                           const core::Tensor& triangles,
+                           core::Tensor& vertex_areas) {
+    const int64_t n = triangles.GetLength();
+    const core::Dtype dtype = vertex_areas.GetDtype();
+    const core::Tensor triangles_d = triangles.To(core::Int64);
+
+    vertex_areas.Fill(0);
+
+    DISPATCH_FLOAT_DTYPE_TO_TEMPLATE(dtype, [&]() {
+        scalar_t* vertex_areas_ptr = vertex_areas.GetDataPtr<scalar_t>();
+        const int64_t* triangle_ptr = triangles_d.GetDataPtr<int64_t>();
+        const scalar_t* vertex_ptr = vertices.GetDataPtr<scalar_t>();
+
+        for (int64_t i = 0; i < n; ++i) {
+            int64_t idx = 3 * i;
+
+            int64_t triangle_id1 = triangle_ptr[idx];
+            int64_t triangle_id2 = triangle_ptr[idx + 1];
+            int64_t triangle_id3 = triangle_ptr[idx + 2];
+
+            scalar_t v01[3], v02[3];
+
+            v01[0] = vertex_ptr[3 * triangle_id2] - 
+                     vertex_ptr[3 * triangle_id1];
+            v01[1] = vertex_ptr[3 * triangle_id2 + 1] -
+                     vertex_ptr[3 * triangle_id1 + 1];
+            v01[2] = vertex_ptr[3 * triangle_id2 + 2] -
+                     vertex_ptr[3 * triangle_id1 + 2];
+
+            v02[0] = vertex_ptr[3 * triangle_id3] - 
+                     vertex_ptr[3 * triangle_id1];
+            v02[1] = vertex_ptr[3 * triangle_id3 + 1] -
+                     vertex_ptr[3 * triangle_id1 + 1];
+            v02[2] = vertex_ptr[3 * triangle_id3 + 2] -
+                     vertex_ptr[3 * triangle_id1 + 2];
+
+            scalar_t tri_area =
+                    0.5 * core::linalg::kernel::cross_mag_3x1(v01, v02);
+
+            scalar_t share = tri_area / 3.0;
+
+            vertex_areas_ptr[triangle_id1] += share;
+            vertex_areas_ptr[triangle_id2] += share;
+            vertex_areas_ptr[triangle_id3] += share;
+        }
+    });
+}
+
 template <typename T>
 void mix_3x3(T* out, const T* a, const T* b, const T* c, float wts[3]) {
     out[0] = wts[0] * a[0] + wts[1] * b[0] + wts[2] * c[0];

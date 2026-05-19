@@ -732,6 +732,12 @@ public:
     /// triangles.
     TriangleMesh &ComputeTriangleAreas();
 
+    /// \brief Function to compute vertex areas and save it as a vertex
+    /// attribute "areas". Each vertex area is defined as one-third of the sum
+    /// of the area of all adjacent triangles. Prints a warning,
+    /// if mesh is empty or has no vertices.
+    TriangleMesh &ComputeVertexAreas();
+
     /// \brief Clip mesh with a plane.
     /// This method clips the triangle mesh with the specified plane.
     /// Parts of the mesh on the positive side of the plane will be kept and
