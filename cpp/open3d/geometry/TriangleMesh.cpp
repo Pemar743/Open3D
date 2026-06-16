@@ -1197,6 +1197,25 @@ double TriangleMesh::GetSurfaceArea(std::vector<double> &triangle_areas) const {
     return surface_area;
 }
 
+double TriangleMesh::GetSurfaceArea(std::vector<double> &triangle_areas, std::vector<double> &vertex_areas) const {
+    double surface_area = 0;
+    triangle_areas.resize(triangles_.size());
+    vertex_areas.resize(vertices_.size());
+    vertex_areas.fill(0);
+    for (size_t tidx = 0; tidx < triangles_.size(); ++tidx) {
+        const Eigen::Vector3i &triangle = triangle_[tidx];
+        double triangle_area = GetTriangleArea(tidx);
+        double vertex_share = triangle_area / 3.0;
+        triangle_areas[tidx] = triangle_area;
+        vertex_areas[triangle(0)] += vertex_share;
+        vertex_areas[triangle(1)] += vertex_share;
+        vertex_areas[triangle(2)] += vertex_share;
+        surface_area += triangle_area;
+    }
+    return surface_area
+}
+        
+
 double TriangleMesh::GetVolume() const {
     // Computes the signed volume of the tetrahedron defined by
     // the three triangle vertices and the origin. The sign is determined by
