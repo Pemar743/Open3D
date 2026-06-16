@@ -311,6 +311,10 @@ public:
     /// the individual triangle surfaces.
     double GetSurfaceArea(std::vector<double> &triangle_areas) const;
 
+    /// Function that computes the surface area of the mesh, i.e. the sum of
+    /// the idividual triangle surfaces. Also computes individual vertex areas.
+    double GetSurfaceArea(std::vector<double> &triangle_areas, std::vector<double> &vertex_areas) const;
+
     /// Function that computes the volume of the mesh, under the condition that
     /// it is watertight and orientable.
     /// See Zhang and Chen, "Efficient feature extraction for 2D/3D objects in
